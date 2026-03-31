@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:drift/drift.dart' as drift;
 import '../../../core/database/database.dart';
 import '../controllers/inventory_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../widgets/barcode_scanner_dialog.dart';
 
 class AddPartView extends StatefulWidget {
   final Part? part;
@@ -88,7 +88,36 @@ class _AddPartViewState extends State<AddPartView> {
                     children: [
                       _buildTextField(nameController, 'Part Name', Icons.settings_suggest, validator: (v) => v!.isEmpty ? 'Name required' : null),
                       const SizedBox(height: 16),
-                      _buildTextField(barcodeController, 'Barcode (Optional)', Icons.qr_code_scanner),
+                      _buildTextField(
+                        barcodeController, 
+                        'Barcode (Optional)', 
+                        Icons.qr_code_scanner,
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                final result = await showDialog<String>(
+                                  context: context,
+                                  builder: (context) => const BarcodeScannerDialog(),
+                                );
+                                if (result != null) {
+                                  barcodeController.text = result;
+                                }
+                              },
+                              icon: const Icon(Icons.camera_alt, color: AppColors.primary),
+                              tooltip: 'Scan Barcode',
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                barcodeController.text = controller.generateUniqueBarcode();
+                              },
+                              icon: const Icon(Icons.auto_fix_high, color: AppColors.success),
+                              tooltip: 'Auto-generate',
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       _buildTextField(categoryController, 'Category', Icons.category_outlined, validator: (v) => v!.isEmpty ? 'Category required' : null),
                     ],
@@ -208,7 +237,7 @@ class _AddPartViewState extends State<AddPartView> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, String? Function(String?)? validator}) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, Widget? suffixIcon, String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,
       validator: validator,
@@ -216,6 +245,7 @@ class _AddPartViewState extends State<AddPartView> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20, color: AppColors.primary),
+        suffixIcon: suffixIcon,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Colors.white,

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/database/database.dart';
 import '../../dashboard/controllers/dashboard_controller.dart';
+import '../../../core/constants/app_colors.dart';
 import '../models/cart_item.dart';
 
 class PosController extends GetxController {
@@ -134,6 +134,7 @@ class PosController extends GetxController {
             partId: item.part.id,
             quantity: item.quantity,
             actualSoldPrice: item.actualSoldPrice,
+            costPrice: drift.Value(item.part.costPrice),
           ));
 
           // 3. Deduct Stock
@@ -164,6 +165,28 @@ class PosController extends GetxController {
     } catch (e) {
       print('Checkout Error: $e');
       Get.snackbar('Error', 'Checkout failed: $e');
+    }
+  }
+
+  void handleBarcodeScan(String code) {
+    // Find part with this barcode
+    final part = availableProducts.firstWhereOrNull((p) => p.barcode == code);
+    
+    if (part != null) {
+      addToCart(part);
+      Get.snackbar(
+        'Item Added', 
+        '${part.name} added to cart',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.success.withOpacity(0.1),
+      );
+    } else {
+      Get.snackbar(
+        'Not Found', 
+        'No item found with barcode: $code',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error.withOpacity(0.1),
+      );
     }
   }
 }

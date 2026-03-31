@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:get/get.dart';
 import 'package:drift/drift.dart' as drift;
 import '../../../core/database/database.dart';
@@ -77,5 +78,18 @@ class InventoryController extends GetxController {
     } catch (e) {
       Get.snackbar('Error', 'Failed to delete part: $e');
     }
+  }
+
+  String generateUniqueBarcode() {
+    final random = Random();
+    const chars = '0123456789';
+    String code = '';
+    
+    // Generate a 10-digit numeric barcode
+    do {
+      code = List.generate(10, (index) => chars[random.nextInt(chars.length)]).join();
+    } while (parts.any((p) => p.barcode == code));
+    
+    return code;
   }
 }

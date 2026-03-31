@@ -32,6 +32,7 @@ class SaleItems extends Table {
   IntColumn get partId => integer().references(Parts, #id)();
   IntColumn get quantity => integer()();
   RealColumn get actualSoldPrice => real()();
+  RealColumn get costPrice => real().withDefault(const Constant(0))();
 }
 
 @DriftDatabase(tables: [Parts, Sales, SaleItems])
@@ -39,7 +40,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // Add costPrice column to SaleItems
+          await m.addColumn(saleItems, saleItems.costPrice);
+        }
+      },
+    );
+  }
 
   // Helper methods for migration parity
   // Parts

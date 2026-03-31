@@ -111,6 +111,15 @@ class ReportsView extends StatelessWidget {
                 AppColors.primary,
               ),
             ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildMetricCard(
+                'Total Profit',
+                'Rs. ${controller.totalProfit.value.toStringAsFixed(0)}',
+                Icons.trending_up,
+                AppColors.success,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),

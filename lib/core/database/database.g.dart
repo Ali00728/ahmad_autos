@@ -847,6 +847,18 @@ class $SaleItemsTable extends SaleItems
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _costPriceMeta = const VerificationMeta(
+    'costPrice',
+  );
+  @override
+  late final GeneratedColumn<double> costPrice = GeneratedColumn<double>(
+    'cost_price',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -854,6 +866,7 @@ class $SaleItemsTable extends SaleItems
     partId,
     quantity,
     actualSoldPrice,
+    costPrice,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -905,6 +918,12 @@ class $SaleItemsTable extends SaleItems
     } else if (isInserting) {
       context.missing(_actualSoldPriceMeta);
     }
+    if (data.containsKey('cost_price')) {
+      context.handle(
+        _costPriceMeta,
+        costPrice.isAcceptableOrUnknown(data['cost_price']!, _costPriceMeta),
+      );
+    }
     return context;
   }
 
@@ -934,6 +953,10 @@ class $SaleItemsTable extends SaleItems
         DriftSqlType.double,
         data['${effectivePrefix}actual_sold_price'],
       )!,
+      costPrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cost_price'],
+      )!,
     );
   }
 
@@ -949,12 +972,14 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
   final int partId;
   final int quantity;
   final double actualSoldPrice;
+  final double costPrice;
   const SaleItem({
     required this.id,
     required this.saleId,
     required this.partId,
     required this.quantity,
     required this.actualSoldPrice,
+    required this.costPrice,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -964,6 +989,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     map['part_id'] = Variable<int>(partId);
     map['quantity'] = Variable<int>(quantity);
     map['actual_sold_price'] = Variable<double>(actualSoldPrice);
+    map['cost_price'] = Variable<double>(costPrice);
     return map;
   }
 
@@ -974,6 +1000,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       partId: Value(partId),
       quantity: Value(quantity),
       actualSoldPrice: Value(actualSoldPrice),
+      costPrice: Value(costPrice),
     );
   }
 
@@ -988,6 +1015,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       partId: serializer.fromJson<int>(json['partId']),
       quantity: serializer.fromJson<int>(json['quantity']),
       actualSoldPrice: serializer.fromJson<double>(json['actualSoldPrice']),
+      costPrice: serializer.fromJson<double>(json['costPrice']),
     );
   }
   @override
@@ -999,6 +1027,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       'partId': serializer.toJson<int>(partId),
       'quantity': serializer.toJson<int>(quantity),
       'actualSoldPrice': serializer.toJson<double>(actualSoldPrice),
+      'costPrice': serializer.toJson<double>(costPrice),
     };
   }
 
@@ -1008,12 +1037,14 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
     int? partId,
     int? quantity,
     double? actualSoldPrice,
+    double? costPrice,
   }) => SaleItem(
     id: id ?? this.id,
     saleId: saleId ?? this.saleId,
     partId: partId ?? this.partId,
     quantity: quantity ?? this.quantity,
     actualSoldPrice: actualSoldPrice ?? this.actualSoldPrice,
+    costPrice: costPrice ?? this.costPrice,
   );
   SaleItem copyWithCompanion(SaleItemsCompanion data) {
     return SaleItem(
@@ -1024,6 +1055,7 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
       actualSoldPrice: data.actualSoldPrice.present
           ? data.actualSoldPrice.value
           : this.actualSoldPrice,
+      costPrice: data.costPrice.present ? data.costPrice.value : this.costPrice,
     );
   }
 
@@ -1034,14 +1066,15 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
           ..write('saleId: $saleId, ')
           ..write('partId: $partId, ')
           ..write('quantity: $quantity, ')
-          ..write('actualSoldPrice: $actualSoldPrice')
+          ..write('actualSoldPrice: $actualSoldPrice, ')
+          ..write('costPrice: $costPrice')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(id, saleId, partId, quantity, actualSoldPrice);
+      Object.hash(id, saleId, partId, quantity, actualSoldPrice, costPrice);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1050,7 +1083,8 @@ class SaleItem extends DataClass implements Insertable<SaleItem> {
           other.saleId == this.saleId &&
           other.partId == this.partId &&
           other.quantity == this.quantity &&
-          other.actualSoldPrice == this.actualSoldPrice);
+          other.actualSoldPrice == this.actualSoldPrice &&
+          other.costPrice == this.costPrice);
 }
 
 class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
@@ -1059,12 +1093,14 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
   final Value<int> partId;
   final Value<int> quantity;
   final Value<double> actualSoldPrice;
+  final Value<double> costPrice;
   const SaleItemsCompanion({
     this.id = const Value.absent(),
     this.saleId = const Value.absent(),
     this.partId = const Value.absent(),
     this.quantity = const Value.absent(),
     this.actualSoldPrice = const Value.absent(),
+    this.costPrice = const Value.absent(),
   });
   SaleItemsCompanion.insert({
     this.id = const Value.absent(),
@@ -1072,6 +1108,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     required int partId,
     required int quantity,
     required double actualSoldPrice,
+    this.costPrice = const Value.absent(),
   }) : saleId = Value(saleId),
        partId = Value(partId),
        quantity = Value(quantity),
@@ -1082,6 +1119,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     Expression<int>? partId,
     Expression<int>? quantity,
     Expression<double>? actualSoldPrice,
+    Expression<double>? costPrice,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1089,6 +1127,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
       if (partId != null) 'part_id': partId,
       if (quantity != null) 'quantity': quantity,
       if (actualSoldPrice != null) 'actual_sold_price': actualSoldPrice,
+      if (costPrice != null) 'cost_price': costPrice,
     });
   }
 
@@ -1098,6 +1137,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     Value<int>? partId,
     Value<int>? quantity,
     Value<double>? actualSoldPrice,
+    Value<double>? costPrice,
   }) {
     return SaleItemsCompanion(
       id: id ?? this.id,
@@ -1105,6 +1145,7 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
       partId: partId ?? this.partId,
       quantity: quantity ?? this.quantity,
       actualSoldPrice: actualSoldPrice ?? this.actualSoldPrice,
+      costPrice: costPrice ?? this.costPrice,
     );
   }
 
@@ -1126,6 +1167,9 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
     if (actualSoldPrice.present) {
       map['actual_sold_price'] = Variable<double>(actualSoldPrice.value);
     }
+    if (costPrice.present) {
+      map['cost_price'] = Variable<double>(costPrice.value);
+    }
     return map;
   }
 
@@ -1136,7 +1180,8 @@ class SaleItemsCompanion extends UpdateCompanion<SaleItem> {
           ..write('saleId: $saleId, ')
           ..write('partId: $partId, ')
           ..write('quantity: $quantity, ')
-          ..write('actualSoldPrice: $actualSoldPrice')
+          ..write('actualSoldPrice: $actualSoldPrice, ')
+          ..write('costPrice: $costPrice')
           ..write(')'))
         .toString();
   }
@@ -1767,6 +1812,7 @@ typedef $$SaleItemsTableCreateCompanionBuilder =
       required int partId,
       required int quantity,
       required double actualSoldPrice,
+      Value<double> costPrice,
     });
 typedef $$SaleItemsTableUpdateCompanionBuilder =
     SaleItemsCompanion Function({
@@ -1775,6 +1821,7 @@ typedef $$SaleItemsTableUpdateCompanionBuilder =
       Value<int> partId,
       Value<int> quantity,
       Value<double> actualSoldPrice,
+      Value<double> costPrice,
     });
 
 final class $$SaleItemsTableReferences
@@ -1839,6 +1886,11 @@ class $$SaleItemsTableFilterComposer
 
   ColumnFilters<double> get actualSoldPrice => $composableBuilder(
     column: $table.actualSoldPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get costPrice => $composableBuilder(
+    column: $table.costPrice,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1913,6 +1965,11 @@ class $$SaleItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get costPrice => $composableBuilder(
+    column: $table.costPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$SalesTableOrderingComposer get saleId {
     final $$SalesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -1979,6 +2036,9 @@ class $$SaleItemsTableAnnotationComposer
     column: $table.actualSoldPrice,
     builder: (column) => column,
   );
+
+  GeneratedColumn<double> get costPrice =>
+      $composableBuilder(column: $table.costPrice, builder: (column) => column);
 
   $$SalesTableAnnotationComposer get saleId {
     final $$SalesTableAnnotationComposer composer = $composerBuilder(
@@ -2060,12 +2120,14 @@ class $$SaleItemsTableTableManager
                 Value<int> partId = const Value.absent(),
                 Value<int> quantity = const Value.absent(),
                 Value<double> actualSoldPrice = const Value.absent(),
+                Value<double> costPrice = const Value.absent(),
               }) => SaleItemsCompanion(
                 id: id,
                 saleId: saleId,
                 partId: partId,
                 quantity: quantity,
                 actualSoldPrice: actualSoldPrice,
+                costPrice: costPrice,
               ),
           createCompanionCallback:
               ({
@@ -2074,12 +2136,14 @@ class $$SaleItemsTableTableManager
                 required int partId,
                 required int quantity,
                 required double actualSoldPrice,
+                Value<double> costPrice = const Value.absent(),
               }) => SaleItemsCompanion.insert(
                 id: id,
                 saleId: saleId,
                 partId: partId,
                 quantity: quantity,
                 actualSoldPrice: actualSoldPrice,
+                costPrice: costPrice,
               ),
           withReferenceMapper: (p0) => p0
               .map(

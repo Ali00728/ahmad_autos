@@ -41,6 +41,7 @@ dependencies:
   drift: ^2.32.0
   path: ^1.9.1
   intl: ^0.20.2
+  mobile_scanner: ^6.0.0
 
 dev_dependencies:
   flutter_test:

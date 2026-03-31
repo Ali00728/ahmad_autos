@@ -11,6 +11,7 @@ class ReportsController extends GetxController {
 
   // Aggregated Metrics
   final RxDouble totalRevenue = 0.0.obs;
+  final RxDouble totalProfit = 0.0.obs;
   final RxInt totalTransactions = 0.obs;
   final RxInt totalItemsSold = 0.obs;
 
@@ -49,19 +50,22 @@ class ReportsController extends GetxController {
 
       // Aggregate Metrics
       double revenue = 0;
+      double profit = 0;
       int itemsCount = 0;
-
-      for (var sale in sales) {
-        revenue += sale.totalAmount;
-        final items = await db.getItemsForSale(sale.id);
-        for (var item in items) {
-          itemsCount += item.quantity;
-        }
-      }
-
-      totalRevenue.value = revenue;
-      totalTransactions.value = sales.length;
-      totalItemsSold.value = itemsCount;
+ 
+       for (var sale in sales) {
+         revenue += sale.totalAmount;
+         final items = await db.getItemsForSale(sale.id);
+         for (var item in items) {
+           itemsCount += item.quantity;
+           profit += (item.actualSoldPrice - item.costPrice) * item.quantity;
+         }
+       }
+ 
+       totalRevenue.value = revenue;
+       totalProfit.value = profit;
+       totalTransactions.value = sales.length;
+       totalItemsSold.value = itemsCount;
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch reports: $e');
     } finally {
